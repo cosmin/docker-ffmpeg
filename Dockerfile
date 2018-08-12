@@ -108,9 +108,6 @@ RUN make install
 
 RUN apt-get install -y openssl libssl-dev
 
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
-ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH
-
 WORKDIR /opt/sources
 RUN wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
 RUN tar xjvf ffmpeg-snapshot.tar.bz2
