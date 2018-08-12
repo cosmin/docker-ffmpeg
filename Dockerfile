@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM nvidia/cuda:9.2-devel-ubuntu18.04
 LABEL maintainer "Cosmin Stejerean <cosmin@offbytwo.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -44,6 +44,13 @@ RUN make -j$(nproc)
 RUN make install
 
 RUN apt-get -y install yasm
+
+WORKDIR /opt/sources
+RUN git clone https://github.com/FFmpeg/nv-codec-headers /opt/sources/nv-codec-headers
+WORKDIR /opt/sources/nv-codec-headers
+RUN make -j$(nproc)
+RUN make install
+RUN rm -rf /opt/sources/nv-codec-headers
 
 WORKDIR  /opt/sources
 RUN git -C x264 pull 2> /dev/null || git clone --depth 1 https://git.videolan.org/git/x264
@@ -99,6 +106,11 @@ RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg_build" -DENABL
 RUN make -j$(nproc)
 RUN make install
 
+RUN apt-get install -y openssl libssl-dev
+
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH
+
 WORKDIR /opt/sources
 RUN wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
 RUN tar xjvf ffmpeg-snapshot.tar.bz2
@@ -107,10 +119,14 @@ RUN ./configure \
   --prefix="/opt/ffmpeg_build" \
   --pkg-config-flags="--static" \
   --extra-cflags="-I/opt/ffmpeg_build/include" \
+  --extra-cflags="-I/usr/local/cuda/include" \
   --extra-ldflags="-L/opt/ffmpeg_build/lib" \
+  --extra-ldflags="-L/usr/local/cuda/lib64" \
   --extra-libs="-lpthread -lm" \
   --bindir="/opt/ffmpeg/bin" \
   --enable-gpl \
+  --enable-nonfree \
+  --enable-version3 \
   --enable-libaom \
   --enable-libass \
   --enable-libfdk-aac \
@@ -121,7 +137,11 @@ RUN ./configure \
   --enable-libvpx \
   --enable-libx264 \
   --enable-libx265 \
-  --enable-nonfree
+  --enable-openssl \
+  --enable-vaapi \ 
+  --enable-cuda-sdk \
+  --enable-cuvid \
+  --enable-libnpp
 RUN make -j$(nproc)
 RUN make install
 WORKDIR /opt
@@ -131,3 +151,5 @@ RUN rm -r /var/lib/apt/lists/*
 
 RUN apt-get -y clean
 RUN rm -r /var/lib/apt/lists/*
+
+RUN rm -rf /opt/sources
