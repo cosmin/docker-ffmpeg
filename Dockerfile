@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # update, and install basic packages
 RUN apt-get update -qq
 ENV TZ=UTC
-RUN apt-get -y install \
+RUN apt-get -y install --no-install-recommends \
   autoconf \
   automake \
   build-essential \
@@ -14,14 +14,9 @@ RUN apt-get -y install \
   git-core \
   libass-dev \
   libfreetype6-dev \
-  libsdl2-dev \
-  libtool \
   libva-dev \
-  libvdpau-dev \
+  libtool \
   libvorbis-dev \
-  libxcb1-dev \
-  libxcb-shm0-dev \
-  libxcb-xfixes0-dev \
   openssl \
   libssl-dev \
   pkg-config \
@@ -112,7 +107,7 @@ RUN git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph
 RUN git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && \
     mkdir aom_build && \
     cd aom_build && \
-    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg_build" -DENABLE_SHARED=off -DENABLE_NASM=on ../aom && \
+    cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg_build" -DENABLE_SHARED=off -DENABLE_UNIT_TESTS=off -DENABLE_EXAMPLES=off -DENABLE_NASM=on ../aom && \
     make -j$(nproc) && \
     make install && \
     rm -rf /opt/sources/aom && \
@@ -131,6 +126,7 @@ RUN wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.
 	--extra-ldflags="-L/usr/local/cuda/lib64" \
 	--extra-libs="-lpthread -lm" \
 	--bindir="/opt/ffmpeg/bin" \
+        --disable-ffplay \
 	--enable-gpl \
 	--enable-nonfree \
 	--enable-version3 \
