@@ -42,15 +42,22 @@ RUN mkdir -p /opt/sources /opt/ffmpeg/bin
 ENV PATH="/opt/ffmpeg/bin:$PATH"
 ENV PKG_CONFIG_PATH="/opt/ffmpeg_build/lib/pkgconfig"
 
+RUN apt-get update -qq && apt-get install -y gcc-8 g++-8 && apt-get -y clean && rm -r /var/lib/apt/lists/*
+ENV CC=/usr/bin/gcc-8
+ENV CXX=/usr/bin/g++-8
+CMD ln -s /usr/bin/gcc-7 /usr/local/cuda/bin/gcc 
+CMD ln -s /usr/bin/g++-7 /usr/local/cuda/bin/g++
+CMD update-alternatives --remove-all g++ && update-alternatives --remove-all gcc && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
+
 WORKDIR /opt/sources
 
-RUN wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2 && \
-    tar xjvf nasm-2.13.03.tar.bz2 && \
-    cd /opt/sources/nasm-2.13.03 && \
+RUN wget https://www.nasm.us/pub/nasm/releasebuilds/2.14rc15/nasm-2.14rc15.tar.bz2 && \
+    tar xjvf nasm-2.14rc15.tar.bz2 && \
+    cd /opt/sources/nasm-2.14rc15 && \
     ./autogen.sh && ./configure --prefix="/opt/ffmpeg_build" --bindir="/opt/ffmpeg/bin" && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /opt/sources/nasm-2.13.03
+    rm -rf /opt/sources/nasm-*
 
 RUN git clone https://github.com/FFmpeg/nv-codec-headers /opt/sources/nv-codec-headers && \
     cd /opt/sources/nv-codec-headers && \
