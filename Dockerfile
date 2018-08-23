@@ -43,8 +43,8 @@ ENV CXX=/usr/bin/g++-8
 
 WORKDIR /opt/sources
 
-RUN wget https://www.nasm.us/pub/nasm/releasebuilds/2.14rc15/nasm-2.14rc15.tar.bz2 && \
-    tar xjvf nasm-2.14rc15.tar.bz2 && \
+RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/2.14rc15/nasm-2.14rc15.tar.bz2 && \
+    tar xjf nasm-2.14rc15.tar.bz2 && \
     cd /opt/sources/nasm-2.14rc15 && \
     ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" && \
     make -j$(nproc) && \
@@ -85,8 +85,8 @@ RUN git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/m
     make install && \
     rm -rf /opt/sources/fdk_aac
 
-RUN wget -O lame-3.100.tar.gz https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz && \
-    tar xzvf lame-3.100.tar.gz && \
+RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz && \
+    tar xzf lame-3.100.tar.gz && \
     cd lame-3.100 && \
     ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --disable-shared --enable-nasm && \
     make -j$(nproc) && \
@@ -110,8 +110,16 @@ RUN git -C aom pull 2> /dev/null || git clone --depth 1 --branch v1.0.0 https://
     rm -rf /opt/sources/aom && \
     rm -rf /opt/sources/aom_build
 
-RUN wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
-    tar xjvf ffmpeg-snapshot.tar.bz2 && \
+RUN git clone --branch v1.3.9 --depth 1 https://github.com/Netflix/vmaf.git vmaf && \
+    cd vmaf && \
+    make -j$(nproc) && \
+    sed -i 's|/usr/local|/opt/ffmpeg|g' wrapper/libvmaf.pc && \
+    cd wrapper && \
+    make install INSTALL_PREFIX=/opt/ffmpeg && \
+    rm -rf /opt/sources/vmaf
+
+RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
+    tar xjf ffmpeg-snapshot.tar.bz2 && \
     rm ffmpeg-snapshot.tar.bz2 && \
     cd ffmpeg && \
     ./configure \
@@ -140,6 +148,7 @@ RUN wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-snapshot.
 	--enable-libvpx \
 	--enable-libx264 \
 	--enable-libx265 \
+        --enable-libvmaf \
 	--enable-openssl \
 	--enable-vaapi \ 
 	--enable-cuda-sdk \
