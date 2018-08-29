@@ -101,7 +101,7 @@ RUN git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph
     make install && \
     rm -rf /opt/sources/opus
 
-RUN git -C aom pull 2> /dev/null || git clone --depth 1 --branch v1.0.0 https://aomedia.googlesource.com/aom && \
+RUN git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && \
     mkdir aom_build && \
     cd aom_build && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 -DENABLE_EXAMPLES=off -DENABLE_NASM=on ../aom && \
