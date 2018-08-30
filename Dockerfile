@@ -57,28 +57,29 @@ RUN git clone https://github.com/FFmpeg/nv-codec-headers /opt/sources/nv-codec-h
     make install && \
     rm -rf /opt/sources/nv-codec-headers
 
-RUN git -C x264 pull 2> /dev/null || git clone --depth 1 https://git.videolan.org/git/x264 && \
+RUN git -C x264 pull 2> /dev/null || git clone --branch master --depth 1 https://git.videolan.org/git/x264 && \
     cd /opt/sources/x264 && \
     ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --enable-static --enable-pic && \
     make -j$(nproc) && \
     make install && \
     rm -rf /opt/sources/x264
 
-RUN hg clone https://bitbucket.org/multicoreware/x265 && \
-    cd x265/build/linux && \
+RUN curl -O http://ftp.videolan.org/pub/videolan/x265/x265_2.8.tar.gz && \
+    tar zxvf x265_2.8.tar.gz && \
+    cd x265_2.8/build/linux && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off ../../source && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /opt/sources/x265
+    rm -rf /opt/sources/x265_2.8
 
-RUN git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && \
+RUN git -C libvpx pull 2> /dev/null || git clone --branch v1.7.0 --depth 1 https://chromium.googlesource.com/webm/libvpx.git && \
     cd libvpx && \
     ./configure --prefix="/opt/ffmpeg" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && \
     make -j$(nproc) && \
     make install && \
     rm -rf /opt/sources/libvpx
 
-RUN git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && \
+RUN git -C fdk-aac pull 2> /dev/null || git clone --branch v0.1.6 --depth 1 https://github.com/mstorsjo/fdk-aac && \
     cd fdk-aac && \
     autoreconf -fiv && ./configure --prefix="/opt/ffmpeg" --disable-shared && \
     make -j$(nproc) && \
@@ -93,7 +94,7 @@ RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/3.100/lam
     make install && \
     rm -rf /opt/sources/lame-3.100
 
-RUN git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && \
+RUN git -C opus pull 2> /dev/null || git clone --branch v1.2.1 --depth 1 https://github.com/xiph/opus.git && \
     cd opus && \
     ./autogen.sh && \
     ./configure --prefix="/opt/ffmpeg" --disable-shared && \
@@ -101,7 +102,7 @@ RUN git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph
     make install && \
     rm -rf /opt/sources/opus
 
-RUN git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && \
+RUN git -C aom pull 2> /dev/null || git clone --branch v1.0.0 --depth 1 https://aomedia.googlesource.com/aom && \
     mkdir aom_build && \
     cd aom_build && \
     cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 -DENABLE_EXAMPLES=off -DENABLE_NASM=on ../aom && \
@@ -118,7 +119,7 @@ RUN git clone --branch v1.3.9 --depth 1 https://github.com/Netflix/vmaf.git vmaf
     make install INSTALL_PREFIX=/opt/ffmpeg && \
     rm -rf /opt/sources/vmaf
 
-RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
+RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2 && \
     tar xjf ffmpeg-snapshot.tar.bz2 && \
     rm ffmpeg-snapshot.tar.bz2 && \
     cd ffmpeg && \
