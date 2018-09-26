@@ -161,6 +161,7 @@ RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2 && \
 
 RUN rm -rf /opt/sources
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+RUN ln -s /opt/ffmpeg/share/model /usr/local/share/
 RUN echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/zz_cuda_stubs.conf
 RUN ldconfig
 WORKDIR /root
