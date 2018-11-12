@@ -43,9 +43,9 @@ ENV CXX=/usr/bin/g++-8
 
 WORKDIR /opt/sources
 
-RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/2.14rc15/nasm-2.14rc15.tar.bz2 && \
-    tar xjf nasm-2.14rc15.tar.bz2 && \
-    cd /opt/sources/nasm-2.14rc15 && \
+RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/2.14/nasm-2.14.tar.bz2 && \
+    tar xjf nasm-2.14.tar.bz2 && \
+    cd /opt/sources/nasm-2.14 && \
     ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" && \
     make -j$(nproc) && \
     make install && \
@@ -94,7 +94,7 @@ RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/3.100/lam
     make install && \
     rm -rf /opt/sources/lame-3.100
 
-RUN git -C opus pull 2> /dev/null || git clone --branch v1.2.1 --depth 1 https://github.com/xiph/opus.git && \
+RUN git -C opus pull 2> /dev/null || git clone --branch v1.3 --depth 1 https://github.com/xiph/opus.git && \
     cd opus && \
     ./autogen.sh && \
     ./configure --prefix="/opt/ffmpeg" --disable-shared && \
@@ -119,10 +119,10 @@ RUN git clone --branch v1.3.9 --depth 1 https://github.com/Netflix/vmaf.git vmaf
     make install INSTALL_PREFIX=/opt/ffmpeg && \
     rm -rf /opt/sources/vmaf
 
-RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2 && \
-    tar xjf ffmpeg-snapshot.tar.bz2 && \
-    rm ffmpeg-snapshot.tar.bz2 && \
-    cd ffmpeg && \
+RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2 && \
+    tar xjf ffmpeg-4.1.tar.bz2  && \
+    rm ffmpeg-4.1.tar.bz2 && \
+    cd ffmpeg-4.1 && \
     ./configure \
         --prefix="/opt/ffmpeg" \
         --pkg-config-flags="--static" \
@@ -157,7 +157,7 @@ RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2 && \
 	--enable-libnpp && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /opt/sources/ffmpeg
+    rm -rf /opt/sources/ffmpeg-4.1
 
 RUN rm -rf /opt/sources
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
