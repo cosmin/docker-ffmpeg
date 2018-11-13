@@ -7,5 +7,5 @@ docker:
 
 .PHONY: push
 push: docker
-	docker tag ffmpeg:latest offbytwo/video-tools:latest
-	docker push offbytwo/video-tools:latest
+	docker tag ffmpeg:latest offbytwo/ffmpeg:latest
+	docker push offbytwo/ffmpeg:latest
