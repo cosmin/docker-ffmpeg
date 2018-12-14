@@ -1,4 +1,15 @@
 FROM nvidia/cuda:9.2-devel-ubuntu18.04 as build
+ARG nasm_version=2.14
+ARG x264_version=master
+ARG x265_version=2.8
+ARG libvpx_version=v1.7.0
+ARG fdk_aac_version=v0.1.6
+ARG lame_version=3.100
+ARG opus_version=v1.3
+ARG libaom_version=v1.0.0
+ARG vmaf_version=v1.3.9
+ARG ffmpeg_version=4.1
+
 ENV DEBIAN_FRONTEND noninteractive
 
 # update, and install basic packages
@@ -42,9 +53,9 @@ ENV CXX=/usr/bin/g++-8
 
 WORKDIR /opt/sources
 
-RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/2.14/nasm-2.14.tar.bz2
-RUN tar xjf nasm-2.14.tar.bz2
-WORKDIR /opt/sources/nasm-2.14
+RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.bz2
+RUN tar xjf nasm-${nasm_version}.tar.bz2
+WORKDIR /opt/sources/nasm-${nasm_version}
 RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
 RUN make -j$(nproc)
 RUN make install
@@ -55,64 +66,64 @@ RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/x264
-RUN git clone --branch master --depth 1 https://git.videolan.org/git/x264 .
+RUN git clone --branch ${x264_version} --depth 1 https://git.videolan.org/git/x264 .
 RUN ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --enable-static --enable-pic
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources
-RUN curl -O http://ftp.videolan.org/pub/videolan/x265/x265_2.8.tar.gz
-RUN tar zxvf x265_2.8.tar.gz
-WORKDIR x265_2.8/build/linux
+RUN curl -O http://ftp.videolan.org/pub/videolan/x265/x265_${x265_version}.tar.gz
+RUN tar zxvf x265_${x265_version}.tar.gz
+WORKDIR x265_${x265_version}/build/linux
 RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off ../../source
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/libvpx
-RUN git clone --branch v1.7.0 --depth 1 https://chromium.googlesource.com/webm/libvpx.git .
+RUN git clone --branch ${libvpx_version} --depth 1 https://chromium.googlesource.com/webm/libvpx.git .
 RUN ./configure --prefix="/opt/ffmpeg" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/fdk-aac
-RUN git clone --branch v0.1.6 --depth 1 https://github.com/mstorsjo/fdk-aac .
+RUN git clone --branch ${fdk_aac_version} --depth 1 https://github.com/mstorsjo/fdk-aac .
 RUN autoreconf -fiv && ./configure --prefix="/opt/ffmpeg" --disable-shared
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources
-RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz
-RUN tar xzf lame-3.100.tar.gz
-WORKDIR lame-3.100
+RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/${lame_version}/lame-${lame_version}.tar.gz
+RUN tar xzf lame-${lame_version}.tar.gz
+WORKDIR lame-${lame_version}
 RUN ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --disable-shared --enable-nasm
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/opus
-RUN git clone --branch v1.3 --depth 1 https://github.com/xiph/opus.git .
+RUN git clone --branch ${opus_version} --depth 1 https://github.com/xiph/opus.git .
 RUN ./autogen.sh
 RUN ./configure --prefix="/opt/ffmpeg" --disable-shared
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/aom
-RUN git -C aom pull 2> /dev/null || git clone --branch v1.0.0 --depth 1 https://aomedia.googlesource.com/aom .
+RUN git -C aom pull 2> /dev/null || git clone --branch ${libaom_version} --depth 1 https://aomedia.googlesource.com/aom .
 WORKDIR /opt/sources/aom_build
 RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 -DENABLE_EXAMPLES=off -DENABLE_NASM=on ../aom
 RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources/vmaf
-RUN git clone --branch v1.3.9 --depth 1 https://github.com/Netflix/vmaf.git .
+RUN git clone --branch ${vmaf_version} --depth 1 https://github.com/Netflix/vmaf.git .
 RUN make -j$(nproc)
 RUN sed -i 's|/usr/local|/opt/ffmpeg|g' wrapper/libvmaf.pc
 WORKDIR wrapper
 RUN make install INSTALL_PREFIX=/opt/ffmpeg
 
 WORKDIR /opt/sources
-RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2
-RUN tar xjf ffmpeg-4.1.tar.bz2
-WORKDIR ffmpeg-4.1
+RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
+RUN tar xjf ffmpeg-${ffmpeg_version}.tar.bz2
+WORKDIR ffmpeg-${ffmpeg_version}
 RUN    ./configure \
         --prefix="/opt/ffmpeg" \
         --pkg-config-flags="--static" \
