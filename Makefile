@@ -1,11 +1,12 @@
-.PHONY: all
-all: docker
+.PHONY: all release experimental push
+all: stable
 
-.PHONY: docker
-docker:
-	docker build -t ffmpeg:latest .
-
-.PHONY: push
-push: docker
-	docker tag ffmpeg:latest offbytwo/ffmpeg:latest
-	docker push offbytwo/ffmpeg:latest
+stable:
+	$(eval VERSION=stable)
+	docker build -t ffmpeg:$(VERSION) .
+experimental:
+	$(eval VERSION=experimental)
+	docker build --build-arg ffmpeg_version=snapshot --build-arg libaom_version=master -t ffmpeg:$(VERSION) .
+push:
+	docker tag ffmpeg:$(VERSION) offbytwo/ffmpeg:$(VERSION)
+	docker push offbytwo/ffmpeg:$(VERSION)

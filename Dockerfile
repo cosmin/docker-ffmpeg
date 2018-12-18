@@ -122,8 +122,8 @@ RUN make install INSTALL_PREFIX=/opt/ffmpeg
 
 WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
-RUN tar xjf ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
+RUN tar xjf ../ffmpeg-${ffmpeg_version}.tar.bz2 --strip-components 1
 RUN    ./configure \
         --prefix="/opt/ffmpeg" \
         --pkg-config-flags="--static" \
