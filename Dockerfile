@@ -38,7 +38,8 @@ RUN apt-get update -qq && \
     mercurial \
     libnuma-dev \
     gcc-8 \
-    g++-8
+    g++-8 \
+    ca-certificates
 
 
 ENV TZ=UTC
@@ -123,9 +124,7 @@ RUN    ./configure \
         --prefix="/opt/ffmpeg" \
         --pkg-config-flags="--static" \
 	--extra-cflags="-I/opt/ffmpeg/include" \
-	--extra-cflags="-I/usr/local/cuda/include" \
 	--extra-ldflags="-L/opt/ffmpeg/lib" \
-	--extra-ldflags="-L/usr/local/cuda/lib64" \
         --extra-ldexeflags="-Bstatic" \
 	--extra-libs="-lpthread -lm" \
 	--bindir="/opt/ffmpeg/bin" \
@@ -159,6 +158,7 @@ RUN apt-get update -qq && apt-get upgrade -y && \
     libva2 libva-drm2 \
     libass9 \
     libnuma1 \
+    libssl1.1 \
     libfreetype6 \
     libvorbisenc2 libvorbis0a \
     && apt-get -y clean && rm -r /var/lib/apt/lists/*
@@ -169,9 +169,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 WORKDIR /opt/ffmpeg
 COPY --from=build /opt/ffmpeg .
 
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 RUN ln -s /opt/ffmpeg/share/model /usr/local/share/
-RUN echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/zz_cuda_stubs.conf
 RUN ldconfig
 
 ENV PATH="/opt/ffmpeg/bin:$PATH"
