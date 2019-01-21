@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.2-devel-ubuntu18.04 as build
+FROM ubuntu:bionic as build
 ARG nasm_version=2.14
 ARG x264_version=master
 ARG x265_version=2.8
@@ -57,11 +57,6 @@ RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-
 RUN tar xjf nasm-${nasm_version}.tar.bz2
 WORKDIR /opt/sources/nasm-${nasm_version}
 RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
-RUN make -j$(nproc)
-RUN make install
-
-WORKDIR /opt/sources/nv-codec-headers
-RUN git clone https://github.com/FFmpeg/nv-codec-headers .
 RUN make -j$(nproc)
 RUN make install
 
@@ -152,19 +147,15 @@ RUN    ./configure \
 	--enable-libx265 \
         --enable-libvmaf \
 	--enable-openssl \
-	--enable-vaapi \ 
-	--enable-cuda-sdk \
-	--enable-cuvid \
-	--enable-libnpp
+	--enable-vaapi
 RUN make -j$(nproc)
 RUN make install
 
-FROM nvidia/cuda:9.2-devel-ubuntu18.04
+FROM ubuntu:bionic
 LABEL maintainer "Cosmin Stejerean <cosmin@offbytwo.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get upgrade -y && \
     apt-get -y install --no-install-recommends \
-    cuda-npp-9-2 cuda-driver-dev-9-2 \
     libva2 libva-drm2 \
     libass9 \
     libnuma1 \
