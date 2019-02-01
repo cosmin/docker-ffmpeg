@@ -9,6 +9,7 @@ ARG opus_version=v1.3
 ARG libaom_version=v1.0.0
 ARG vmaf_version=v1.3.9
 ARG ffmpeg_version=4.1
+ARG xvid_version=1.3.5
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -21,11 +22,8 @@ RUN apt-get update -qq && \
     build-essential \
     cmake \
     git-core \
-    libass-dev \
     libfreetype6-dev \
-    libva-dev \
     libtool \
-    libvorbis-dev \
     openssl \
     libssl-dev \
     pkg-config \
@@ -49,17 +47,24 @@ RUN mkdir -p /opt/ffmpeg/bin
 ENV PATH="/opt/ffmpeg/bin:$PATH"
 ENV PKG_CONFIG_PATH="/opt/ffmpeg/lib/pkgconfig"
 
-ENV CC=/usr/bin/gcc-8
-ENV CXX=/usr/bin/g++-8
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 700 --slave /usr/bin/g++ g++ /usr/bin/g++-7 && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 
 WORKDIR /opt/sources
-
 RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.bz2
 RUN tar xjf nasm-${nasm_version}.tar.bz2
 WORKDIR /opt/sources/nasm-${nasm_version}
 RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
 RUN make -j$(nproc)
 RUN make install
+
+WORKDIR /opt/sources
+RUN curl -sS -O http://downloads.xvid.org/downloads/xvidcore-${xvid_version}.tar.bz2
+RUN tar xjf xvidcore-${xvid_version}.tar.bz2
+WORKDIR /opt/sources/xvidcore/build/generic
+RUN ./configure --prefix="/opt/ffmpeg" --enable-static --enable-pic
+RUN make -j$(nproc)
+RUN make install
+RUN rm -rf /opt/ffmpeg/lib/libxvidcore.so*
 
 WORKDIR /opt/sources/x264
 RUN git clone --branch ${x264_version} --depth 1 https://git.videolan.org/git/x264 .
@@ -105,7 +110,7 @@ RUN make install
 WORKDIR /opt/sources/aom
 RUN git -C aom pull 2> /dev/null || git clone --branch ${libaom_version} --depth 1 https://aomedia.googlesource.com/aom .
 WORKDIR /opt/sources/aom_build
-RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 -DENABLE_EXAMPLES=off -DENABLE_NASM=on ../aom
+RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARED_LIBS=off -DENABLE_TOOLS=off -DENABLE_DOCS=off -DENABLE_EXAMPLES=off -DENABLE_TESTS=off -DENABLE_NASM=on ../aom
 RUN make -j$(nproc)
 RUN make install
 
@@ -135,18 +140,16 @@ RUN    ./configure \
 	--enable-nonfree \
 	--enable-version3 \
 	--enable-libaom \
-	--enable-libass \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
 	--enable-libmp3lame \
+        --enable-libxvid \
 	--enable-libopus \
-	--enable-libvorbis \
 	--enable-libvpx \
 	--enable-libx264 \
 	--enable-libx265 \
         --enable-libvmaf \
-	--enable-openssl \
-	--enable-vaapi
+	--enable-openssl
 RUN make -j$(nproc)
 RUN make install
 
@@ -155,12 +158,9 @@ LABEL maintainer "Cosmin Stejerean <cosmin@offbytwo.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get upgrade -y && \
     apt-get -y install --no-install-recommends \
-    libva2 libva-drm2 \
-    libass9 \
     libnuma1 \
     libssl1.1 \
     libfreetype6 \
-    libvorbisenc2 libvorbis0a \
     && apt-get -y clean && rm -r /var/lib/apt/lists/*
 
 ENV TZ=UTC
