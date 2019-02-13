@@ -1,14 +1,14 @@
 FROM ubuntu:bionic as build
-ARG nasm_version=2.14
+ARG nasm_version=2.14.02
 ARG x264_version=master
-ARG x265_version=2.8
-ARG libvpx_version=v1.7.0
-ARG fdk_aac_version=v0.1.6
+ARG x265_version=3.0
+ARG libvpx_version=v1.8.0
+ARG fdk_aac_version=v2.0.0
 ARG lame_version=3.100
 ARG opus_version=v1.3
 ARG libaom_version=v1.0.0
-ARG vmaf_version=v1.3.9
-ARG ffmpeg_version=4.1
+ARG vmaf_version=v1.3.13
+ARG ffmpeg_version=4.1.1
 ARG xvid_version=1.3.5
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -50,7 +50,8 @@ ENV PKG_CONFIG_PATH="/opt/ffmpeg/lib/pkgconfig"
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 700 --slave /usr/bin/g++ g++ /usr/bin/g++-7 && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 
 WORKDIR /opt/sources
-RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.bz2
+# RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.bz2
+RUN curl -sS -O https://ftp.osuosl.org/pub/blfs/conglomeration/nasm/nasm-${nasm_version}.tar.xz
 RUN tar xjf nasm-${nasm_version}.tar.bz2
 WORKDIR /opt/sources/nasm-${nasm_version}
 RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
