@@ -50,9 +50,9 @@ ENV PKG_CONFIG_PATH="/opt/ffmpeg/lib/pkgconfig"
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 700 --slave /usr/bin/g++ g++ /usr/bin/g++-7 && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 
 WORKDIR /opt/sources
-# RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.bz2
+# RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.xz
 RUN curl -sS -O https://ftp.osuosl.org/pub/blfs/conglomeration/nasm/nasm-${nasm_version}.tar.xz
-RUN tar xjf nasm-${nasm_version}.tar.bz2
+RUN tar xf nasm-${nasm_version}.tar.xz
 WORKDIR /opt/sources/nasm-${nasm_version}
 RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
 RUN make -j$(nproc)
