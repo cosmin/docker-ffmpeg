@@ -7,8 +7,8 @@ ARG fdk_aac_version=v2.0.0
 ARG lame_version=3.100
 ARG opus_version=v1.3
 ARG libaom_version=v1.0.0
-ARG vmaf_version=v1.3.13
-ARG ffmpeg_version=4.1.1
+ARG vmaf_version=v1.3.14
+ARG ffmpeg_version=4.1.3
 ARG xvid_version=1.3.5
 
 ENV DEBIAN_FRONTEND noninteractive
