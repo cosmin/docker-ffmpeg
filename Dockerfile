@@ -1,14 +1,14 @@
 FROM ubuntu:bionic as build
 ARG nasm_version=2.14.02
 ARG x264_version=master
-ARG x265_version=3.0
-ARG libvpx_version=v1.8.0
-ARG fdk_aac_version=v2.0.0
+ARG x265_version=3.2
+ARG libvpx_version=v1.8.1
+ARG fdk_aac_version=v2.0.1
 ARG lame_version=3.100
-ARG opus_version=v1.3
-ARG libaom_version=v1.0.0
-ARG vmaf_version=v1.3.14
-ARG ffmpeg_version=4.1.3
+ARG opus_version=v1.3.1
+ARG libaom_version=master
+ARG vmaf_version=v1.3.15
+ARG ffmpeg_version=4.2.1
 ARG xvid_version=1.3.5
 
 ENV DEBIAN_FRONTEND noninteractive
