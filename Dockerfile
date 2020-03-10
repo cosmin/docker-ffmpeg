@@ -2,14 +2,14 @@ FROM ubuntu:bionic as build
 ARG nasm_version=2.14.02
 ARG x264_version=master
 ARG x265_version=3.2
-ARG libvpx_version=v1.8.1
+ARG libvpx_version=v1.8.2
 ARG fdk_aac_version=v2.0.1
 ARG lame_version=3.100
 ARG opus_version=v1.3.1
 ARG libaom_version=master
 ARG vmaf_version=v1.3.15
-ARG ffmpeg_version=4.2.1
-ARG xvid_version=1.3.5
+ARG ffmpeg_version=4.2.2
+ARG xvid_version=1.3.7
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -59,7 +59,7 @@ RUN make -j$(nproc)
 RUN make install
 
 WORKDIR /opt/sources
-RUN curl -sS -O http://downloads.xvid.org/downloads/xvidcore-${xvid_version}.tar.bz2
+RUN curl -sS -O https://downloads.xvid.com/downloads/xvidcore-${xvid_version}.tar.bz2
 RUN tar xjf xvidcore-${xvid_version}.tar.bz2
 WORKDIR /opt/sources/xvidcore/build/generic
 RUN ./configure --prefix="/opt/ffmpeg" --enable-static --enable-pic
@@ -68,7 +68,7 @@ RUN make install
 RUN rm -rf /opt/ffmpeg/lib/libxvidcore.so*
 
 WORKDIR /opt/sources/x264
-RUN git clone --branch ${x264_version} --depth 1 https://git.videolan.org/git/x264 .
+RUN git clone --branch ${x264_version} --depth 1 https://github.com/corecodec/x264.git .
 RUN ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --enable-static --enable-pic
 RUN make -j$(nproc)
 RUN make install
