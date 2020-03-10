@@ -7,7 +7,7 @@ ARG fdk_aac_version=v2.0.1
 ARG lame_version=3.100
 ARG opus_version=v1.3.1
 ARG libaom_version=master
-ARG vmaf_version=v1.3.15
+ARG vmaf_version=v1.5.1
 ARG ffmpeg_version=4.2.2
 ARG xvid_version=1.3.7
 
@@ -20,6 +20,11 @@ RUN apt-get update -qq && \
     autoconf \
     automake \
     build-essential \
+    python3 \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    ninja-build \
     cmake \
     git-core \
     libfreetype6-dev \
@@ -115,12 +120,13 @@ RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARE
 RUN make -j$(nproc)
 RUN make install
 
+RUN pip3 install meson
+
 WORKDIR /opt/sources/vmaf
 RUN git clone --branch ${vmaf_version} --depth 1 https://github.com/Netflix/vmaf.git .
-RUN make -j$(nproc)
-RUN sed -i 's|/usr/local|/opt/ffmpeg|g' wrapper/libvmaf.pc
-WORKDIR wrapper
-RUN make install INSTALL_PREFIX=/opt/ffmpeg
+WORKDIR libvmaf/build
+RUN meson .. --prefix=/opt/ffmpeg --libdir=/opt/ffmpeg/lib --buildtype release
+RUN ninja -vC . install
 
 WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
