@@ -2,13 +2,13 @@ FROM ubuntu:bionic as build
 ARG nasm_version=2.14.02
 ARG x264_version=master
 ARG x265_version=3.2
-ARG libvpx_version=v1.8.2
+ARG libvpx_version=v1.9.0
 ARG fdk_aac_version=v2.0.1
 ARG lame_version=3.100
 ARG opus_version=v1.3.1
 ARG libaom_version=master
-ARG vmaf_version=v1.5.1
-ARG ffmpeg_version=4.2.2
+ARG vmaf_version=v1.5.3
+ARG ffmpeg_version=4.3.1
 ARG xvid_version=1.3.7
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -181,4 +181,6 @@ RUN ldconfig
 
 ENV PATH="/opt/ffmpeg/bin:$PATH"
 ENV PKG_CONFIG_PATH="/opt/ffmpeg/lib/pkgconfig"
+ENV LD_LIBRARY_PATH="/opt/ffmpeg/lib"
+
 WORKDIR /root
