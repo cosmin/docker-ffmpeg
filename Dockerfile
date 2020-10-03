@@ -128,10 +128,23 @@ WORKDIR libvmaf/build
 RUN meson .. --prefix=/opt/ffmpeg --libdir=/opt/ffmpeg/lib --buildtype release
 RUN ninja -vC . install
 
+WORKDIR /opt/sources/svt-av1
+ARG svt_av1_version=v0.8.5
+RUN git clone --branch ${svt_av1_version} --depth 1 https://github.com/AOMediaCodec/SVT-AV1.git .
+WORKDIR Build/linux
+RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARED_LIBS=off -DCMAKE_BUILD_TYPE=Release ../../
+RUN make -j $(nproc)
+RUN make install
+
+WORKDIR /opt/sources/svt-av1
+RUN curl -sS -O https://raw.githubusercontent.com/AOMediaCodec/SVT-AV1/v0.8.4/ffmpeg_plugin/0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch
+
 WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
 RUN tar xjf ../ffmpeg-${ffmpeg_version}.tar.bz2 --strip-components 1
+RUN patch -p1 < /opt/sources/svt-av1/0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch
+
 RUN    ./configure \
         --prefix="/opt/ffmpeg" \
         --pkg-config-flags="--static" \
@@ -156,6 +169,7 @@ RUN    ./configure \
 	--enable-libx264 \
 	--enable-libx265 \
         --enable-libvmaf \
+	--enable-libsvtav1 \
 	--enable-openssl
 RUN make -j$(nproc)
 RUN make install
