@@ -42,7 +42,8 @@ RUN apt-get update -qq && \
     libnuma-dev \
     gcc-8 \
     g++-8 \
-    ca-certificates
+    ca-certificates \
+    libxcb1-dev
 
 
 ENV TZ=UTC
@@ -170,7 +171,8 @@ RUN    ./configure \
 	--enable-libx265 \
         --enable-libvmaf \
 	--enable-libsvtav1 \
-	--enable-openssl
+	--enable-openssl \
+	--enable-libxcb
 RUN make -j$(nproc)
 RUN make install
 
@@ -182,6 +184,7 @@ RUN apt-get update -qq && apt-get upgrade -y && \
     libnuma1 \
     libssl1.1 \
     libfreetype6 \
+    libxcb1 \
     && apt-get -y clean && rm -r /var/lib/apt/lists/*
 
 ENV TZ=UTC
