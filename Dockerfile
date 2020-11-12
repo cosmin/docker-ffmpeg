@@ -160,6 +160,7 @@ RUN    ./configure \
 	--enable-gpl \
 	--enable-nonfree \
 	--enable-version3 \
+	--enable-zlib \
 	--enable-libaom \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
