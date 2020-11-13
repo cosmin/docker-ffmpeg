@@ -10,6 +10,7 @@ ARG libaom_version=master
 ARG vmaf_version=v1.5.3
 ARG ffmpeg_version=4.3.1
 ARG xvid_version=1.3.7
+ARG zimg_version=release-3.0.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -72,6 +73,13 @@ RUN ./configure --prefix="/opt/ffmpeg" --enable-static --enable-pic
 RUN make -j$(nproc)
 RUN make install
 RUN rm -rf /opt/ffmpeg/lib/libxvidcore.so*
+
+WORKDIR /opt/sources/zimg
+RUN git clone --branch ${zimg_version} --depth 1 https://github.com/sekrit-twc/zimg .
+RUN ./autogen.sh
+RUN ./configure --enable-static  --prefix=/opt/ffmpeg --disable-shared
+RUN make -j $(nproc)
+RUN make install
 
 WORKDIR /opt/sources/x264
 RUN git clone --branch ${x264_version} --depth 1 https://github.com/corecodec/x264.git .
@@ -161,6 +169,7 @@ RUN    ./configure \
 	--enable-nonfree \
 	--enable-version3 \
 	--enable-zlib \
+	--enable-libzimg \
 	--enable-libaom \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
