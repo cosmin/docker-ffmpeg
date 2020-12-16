@@ -1,13 +1,13 @@
 FROM ubuntu:bionic as build
 ARG nasm_version=2.14.02
 ARG x264_version=master
-ARG x265_version=3.2
+ARG x265_version=3.4
 ARG libvpx_version=v1.9.0
 ARG fdk_aac_version=v2.0.1
 ARG lame_version=3.100
 ARG opus_version=v1.3.1
 ARG libaom_version=master
-ARG vmaf_version=v1.5.3
+ARG vmaf_version=v2.0.0
 ARG ffmpeg_version=4.3.1
 ARG xvid_version=1.3.7
 ARG zimg_version=release-3.0.1
@@ -87,10 +87,9 @@ RUN ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --enable-stati
 RUN make -j$(nproc)
 RUN make install
 
-WORKDIR /opt/sources
-RUN curl -O http://ftp.videolan.org/pub/videolan/x265/x265_${x265_version}.tar.gz
-RUN tar zxvf x265_${x265_version}.tar.gz
-WORKDIR x265_${x265_version}/build/linux
+WORKDIR /opt/sources/x265
+RUN git clone --branch ${x265_version} --depth 1 https://github.com/videolan/x265.git .
+WORKDIR build/linux
 RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DENABLE_SHARED=off ../../source
 RUN make -j$(nproc)
 RUN make install
@@ -134,11 +133,11 @@ RUN pip3 install meson
 WORKDIR /opt/sources/vmaf
 RUN git clone --branch ${vmaf_version} --depth 1 https://github.com/Netflix/vmaf.git .
 WORKDIR libvmaf/build
-RUN meson .. --prefix=/opt/ffmpeg --libdir=/opt/ffmpeg/lib --buildtype release
+RUN meson .. --default-library=static --prefix=/opt/ffmpeg --libdir=/opt/ffmpeg/lib --buildtype=release
 RUN ninja -vC . install
 
 WORKDIR /opt/sources/svt-av1
-ARG svt_av1_version=v0.8.5
+ARG svt_av1_version=v0.8.6
 RUN git clone --branch ${svt_av1_version} --depth 1 https://github.com/AOMediaCodec/SVT-AV1.git .
 WORKDIR Build/linux
 RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARED_LIBS=off -DCMAKE_BUILD_TYPE=Release ../../
