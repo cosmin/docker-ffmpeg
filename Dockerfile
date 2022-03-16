@@ -7,10 +7,10 @@ ARG libvpx_version=v1.11.0
 ARG fdk_aac_version=v2.0.2
 ARG lame_version=3.100
 ARG opus_version=v1.3.1
-ARG libaom_version=v3.2.0
-ARG svt_av1_version=v0.8.7
+ARG libaom_version=v3.3.0
+ARG svt_av1_version=v0.9.1
 ARG vmaf_version=v2.3.0
-ARG ffmpeg_version=4.4.1
+ARG ffmpeg_version=5.0
 ARG zimg_version=release-3.0.3
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -131,13 +131,12 @@ RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARE
 RUN make -j $(nproc)
 RUN make install
 
-WORKDIR /opt/sources/svt-av1
-RUN curl -sS -O https://raw.githubusercontent.com/AOMediaCodec/SVT-AV1/v0.8.4/ffmpeg_plugin/0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch
-
 WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
 RUN tar xjf ../ffmpeg-${ffmpeg_version}.tar.bz2 --strip-components 1
+RUN curl -sS -o svt-av1-consolidated.patch https://github.com/cosmin/FFmpeg/commit/050bd034ee99e51247f253291f220a2fb7e050e7.patch
+RUN patch -p1 < svt-av1-consolidated.patch
 
 RUN    ./configure \
     --prefix="/opt/ffmpeg" \
