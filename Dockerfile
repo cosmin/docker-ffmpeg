@@ -1,17 +1,16 @@
-FROM ubuntu:focal as build
+FROM ubuntu:jammy as build
 
 ARG nasm_version=2.15.05
 ARG x264_version=master
 ARG x265_version=3.5
-ARG libvpx_version=v1.11.0
+ARG zimg_version=release-3.0.4
 ARG fdk_aac_version=v2.0.2
-ARG lame_version=3.100
 ARG opus_version=v1.3.1
-ARG libaom_version=v3.3.0
-ARG svt_av1_version=v0.9.1
-ARG vmaf_version=v2.3.0
-ARG ffmpeg_version=5.0
-ARG zimg_version=release-3.0.3
+ARG libvpx_version=v1.12.0
+ARG libaom_version=v3.4.0
+ARG svt_av1_version=v1.1.0
+ARG vmaf_version=v2.3.1
+ARG ffmpeg_version=5.0.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -22,11 +21,11 @@ RUN apt-get update -qq && \
     autoconf \
     automake \
     build-essential \
+    nasm \
+    yasm \
     python3 \
-    python3-pip \
-    python3-setuptools \
-    python3-wheel \
     ninja-build \
+    meson \
     cmake \
     git-core \
     libfreetype6-dev \
@@ -37,13 +36,11 @@ RUN apt-get update -qq && \
     texinfo \
     wget \
     zlib1g-dev \
-    yasm \
     curl \
     git \
     mercurial \
     libnuma-dev \
-    ca-certificates \
-    libxcb1-dev
+    ca-certificates
 
 
 ENV TZ=UTC
@@ -53,14 +50,14 @@ RUN mkdir -p /opt/ffmpeg/bin
 ENV PATH="/opt/ffmpeg/bin:$PATH"
 ENV PKG_CONFIG_PATH="/opt/ffmpeg/lib/pkgconfig"
 
-WORKDIR /opt/sources
-# RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.xz
-RUN curl -sS -O https://ftp.osuosl.org/pub/blfs/conglomeration/nasm/nasm-${nasm_version}.tar.xz
-RUN tar xf nasm-${nasm_version}.tar.xz
-WORKDIR /opt/sources/nasm-${nasm_version}
-RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
-RUN make -j$(nproc)
-RUN make install
+# WORKDIR /opt/sources
+# # RUN curl -sS -O https://www.nasm.us/pub/nasm/releasebuilds/${nasm_version}/nasm-${nasm_version}.tar.xz
+# RUN curl -sS -O https://ftp.osuosl.org/pub/blfs/conglomeration/nasm/nasm-${nasm_version}.tar.xz
+# RUN tar xf nasm-${nasm_version}.tar.xz
+# WORKDIR /opt/sources/nasm-${nasm_version}
+# RUN ./autogen.sh && ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin"
+# RUN make -j$(nproc)
+# RUN make install
 
 WORKDIR /opt/sources/zimg
 RUN git clone --branch ${zimg_version} --depth 1 https://github.com/sekrit-twc/zimg .
@@ -94,14 +91,6 @@ RUN autoreconf -fiv && ./configure --prefix="/opt/ffmpeg" --disable-shared
 RUN make -j$(nproc)
 RUN make install
 
-WORKDIR /opt/sources
-RUN curl -sS -L -O https://downloads.sourceforge.net/project/lame/lame/${lame_version}/lame-${lame_version}.tar.gz
-RUN tar xzf lame-${lame_version}.tar.gz
-WORKDIR lame-${lame_version}
-RUN ./configure --prefix="/opt/ffmpeg" --bindir="/opt/ffmpeg/bin" --disable-shared --enable-nasm
-RUN make -j$(nproc)
-RUN make install
-
 WORKDIR /opt/sources/opus
 RUN git clone --branch ${opus_version} --depth 1 https://github.com/xiph/opus.git .
 RUN ./autogen.sh
@@ -115,8 +104,6 @@ WORKDIR /opt/sources/aom_build
 RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARED_LIBS=off -DENABLE_TOOLS=off -DENABLE_DOCS=off -DENABLE_EXAMPLES=off -DENABLE_TESTS=off -DENABLE_NASM=on ../aom
 RUN make -j$(nproc)
 RUN make install
-
-RUN pip3 install meson
 
 WORKDIR /opt/sources/vmaf
 RUN git clone --branch ${vmaf_version} --depth 1 https://github.com/Netflix/vmaf.git .
@@ -135,7 +122,7 @@ WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
 RUN tar xjf ../ffmpeg-${ffmpeg_version}.tar.bz2 --strip-components 1
-RUN curl -sS -o svt-av1-consolidated.patch https://github.com/cosmin/FFmpeg/commit/050bd034ee99e51247f253291f220a2fb7e050e7.patch
+RUN curl -sS -o svt-av1-consolidated.patch https://github.com/cosmin/FFmpeg/commit/9a151b0edee710727a588dddd0b331b4dc676227.patch
 RUN patch -p1 < svt-av1-consolidated.patch
 
 RUN    ./configure \
@@ -159,27 +146,24 @@ RUN    ./configure \
     --enable-libaom \
     --enable-libfdk-aac \
     --enable-libfreetype \
-    --enable-libmp3lame \
     --enable-libopus \
     --enable-libvpx \
     --enable-libx264 \
     --enable-libx265 \
     --enable-libvmaf \
     --enable-libsvtav1 \
-    --enable-openssl \
-    --enable-libxcb
+    --enable-openssl
 RUN make -j$(nproc)
 RUN make install
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 LABEL maintainer "Cosmin Stejerean <cosmin@offbytwo.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get upgrade -y && \
     apt-get -y install --no-install-recommends \
     libnuma1 \
-    libssl1.1 \
+    libssl3 \
     libfreetype6 \
-    libxcb1 \
     && apt-get -y clean && rm -r /var/lib/apt/lists/*
 
 ENV TZ=UTC
