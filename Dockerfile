@@ -1,4 +1,4 @@
-FROM ubuntu:jammy as build
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 as build
 
 ARG nasm_version=2.15.05
 ARG x264_version=master
@@ -40,6 +40,8 @@ RUN apt-get update -qq && \
     git \
     mercurial \
     libnuma-dev \
+    libnpp-dev-12-0 \
+    cuda-driver-dev-12-0 \
     ca-certificates
 
 
@@ -118,6 +120,11 @@ RUN cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="/opt/ffmpeg" -DBUILD_SHARE
 RUN make -j $(nproc)
 RUN make install
 
+WORKDIR /opt/sources/nv-codec-headers
+RUN git clone https://github.com/FFmpeg/nv-codec-headers .
+RUN make -j$(nproc)
+RUN make install
+
 WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
@@ -131,6 +138,9 @@ RUN    ./configure \
     --pkg-config-flags="--static" \
     --pkg-config-flags="--static" \
     --extra-cflags="-I/opt/ffmpeg/include" \
+    --extra-cflags="-I/usr/local/cuda/include" \
+    --extra-ldflags="-L/opt/ffmpeg/lib" \
+    --extra-ldflags="-L/usr/local/cuda/lib64" \
     --extra-ldflags="-L/opt/ffmpeg/lib" \
     --extra-ldexeflags="-Bstatic" \
     --extra-libs="-lpthread -lm" \
@@ -152,11 +162,13 @@ RUN    ./configure \
     --enable-libx265 \
     --enable-libvmaf \
     --enable-libsvtav1 \
+    --enable-cuda-sdk \
+    --enable-cuvid \
     --enable-openssl
 RUN make -j$(nproc)
 RUN make install
 
-FROM ubuntu:jammy
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
 LABEL maintainer "Cosmin Stejerean <cosmin@offbytwo.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get upgrade -y && \
