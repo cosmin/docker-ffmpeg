@@ -6,11 +6,11 @@ ARG x265_version=3.5
 ARG zimg_version=release-3.0.4
 ARG fdk_aac_version=v2.0.2
 ARG opus_version=v1.3.1
-ARG libvpx_version=v1.12.0
-ARG libaom_version=v3.4.0
-ARG svt_av1_version=v1.1.0
+ARG libvpx_version=v1.13.0
+ARG libaom_version=v3.6.0
+ARG svt_av1_version=v1.4.0
 ARG vmaf_version=v2.3.1
-ARG ffmpeg_version=5.0.1
+ARG ffmpeg_version=6.0
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -122,8 +122,8 @@ WORKDIR /opt/sources
 RUN curl -sS -O https://ffmpeg.org/releases/ffmpeg-${ffmpeg_version}.tar.bz2
 WORKDIR ffmpeg-${ffmpeg_version}
 RUN tar xjf ../ffmpeg-${ffmpeg_version}.tar.bz2 --strip-components 1
-RUN curl -sS -o svt-av1-consolidated.patch https://github.com/cosmin/FFmpeg/commit/9a151b0edee710727a588dddd0b331b4dc676227.patch
-RUN patch -p1 < svt-av1-consolidated.patch
+#RUN curl -sS -o svt-av1-consolidated.patch https://github.com/cosmin/FFmpeg/commit/9a151b0edee710727a588dddd0b331b4dc676227.patch
+#RUN patch -p1 < svt-av1-consolidated.patch
 
 RUN    ./configure \
     --prefix="/opt/ffmpeg" \
